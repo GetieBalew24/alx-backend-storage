@@ -1,4 +1,4 @@
--- SQL script  creates a stored procedure AddBonus
+-- SQL script that creates a stored procedure AddBonus
 DROP PROCEDURE IF EXISTS AddBonus;
 DELIMITER $$$$
 CREATE PROCEDURE AddBonus (user_id INTEGER, project_name nvarchar(255), score float)
