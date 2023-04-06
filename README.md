@@ -1,1 +1,1 @@
-This me working on storage exercise from alx
+This is my storage directory that works on alx project.
