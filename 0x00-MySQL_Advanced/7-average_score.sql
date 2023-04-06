@@ -1,3 +1,4 @@
+-- SQL script to creates a stored procedure ComputeAverageScoreForUser. 
 DROP PROCEDURE IF EXISTS ComputeAverageScoreForUser;
 DELIMITER $$$$
 CREATE PROCEDURE ComputeAverageScoreForUser (user_id INTEGER)
