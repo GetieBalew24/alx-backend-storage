@@ -1,1 +1,1 @@
-This is my storage directory that works on alx project.
+This is my database storage directory that works on alx project.
