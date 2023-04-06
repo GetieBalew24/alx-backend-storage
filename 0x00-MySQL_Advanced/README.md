@@ -1,1 +1,1 @@
-This me working on storage exercise from alx
+This my dirctory working on MySQL advanced project from alx
