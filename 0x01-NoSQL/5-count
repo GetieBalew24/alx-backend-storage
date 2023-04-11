@@ -1,0 +1,3 @@
+// a script that counts a documents in the school collection.
+// The database name  passed as option of mongo command
+db.school.find().count();
