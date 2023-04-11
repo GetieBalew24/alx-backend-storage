@@ -1,52 +1,45 @@
 #!/usr/bin/env python3
-"""  Python script that provides some stats about Nginx logs stored in MongoDB.
-Database: logs.
-Collection: nginx.
-"""
+""" MongoDB Operations with Python using pymongo """
 from pymongo import MongoClient
 
 if __name__ == "__main__":
-    """ display the stats of Nginx logs stored in MongoDB 
-    method = ["GET", "POST", "PUT", "PATCH", "DELETE"] 
-    """
-    client_user = MongoClient('mongodb://127.0.0.1:27017')
-    nginx_document_collection= client_user.logs.nginx
+    """ Provides some stats about Nginx logs stored in MongoDB """
+    client = MongoClient('mongodb://127.0.0.1:27017')
+    nginx_collection = client.logs.nginx
 
-    number_of_logs = nginx_document_collection.count_documents({})
-    print(f'{number_of_logs} logs')
-
+    n_logs = nginx_collection.count_documents({})
+    print(f'{n_logs} logs')
 
     methods = ["GET", "POST", "PUT", "PATCH", "DELETE"]
     print('Methods:')
-    for key in methods:
-        number_of_method = nginx_document_collection.count_documents({
-            "method": key
-            })
-        print(f'\tmethod {key}: {number_of_method}')
+    for method in methods:
+        count = nginx_collection.count_documents({"method": method})
+        print(f'\tmethod {method}: {count}')
 
-
-    count_status_check_doc = nginx_document_collection.count_documents(
-        {
-            "method": "GET", "path": "/status"
-            }
+    status_check = nginx_collection.count_documents(
+        {"method": "GET", "path": "/status"}
     )
 
+    print(f'{status_check} status check')
 
-    print(f'{count_status_check_doc} status check')
-    """ adding the top 10 of the most present IPs in the collection nginx of the database logs """
-    top_10_ip = nginx_document_collection.aggregate([
+    top_ips = nginx_collection.aggregate([
         {"$group":
             {
-                "_id": "$ip", "count": {"$sum": 1}
+                "_id": "$ip",
+                "count": {"$sum": 1}
             }
          },
         {"$sort": {"count": -1}},
         {"$limit": 10},
-        {"$project": {"_id": 0, "ip": "$_id", "count": 1 }}
+        {"$project": {
+            "_id": 0,
+            "ip": "$_id",
+            "count": 1
+        }}
     ])
 
-    print("IP Adderss:")
-    for top_ten_ip in top_10_ip:
-        ip = top_ten_ip.get("ip")
-        count = top_ten_ip.get("count")
+    print("IPs:")
+    for top_ip in top_ips:
+        ip = top_ip.get("ip")
+        count = top_ip.get("count")
         print(f'\t{ip}: {count}')
