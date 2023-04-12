@@ -15,22 +15,24 @@ store = redis.Redis()
 def count_url_access(method):
     """ counting how many times a Url is accessed """
     @wraps(method)
-    def caller(url):
-        content_key = "cached:" + url
-        content_data = store.get(content_key)
-        if content_data:
-            return content_data.decode("utf-8")
+    def wrapper(url):
+        cached_key = "cached:" + url
+        cached_data = store.get(cached_key)
+        if cached_data:
+            return cached_data.decode("utf-8")
+
         count_key = "count:" + url
         html = method(url)
+
         store.incr(count_key)
-        store.set(content_key, html)
-        store.expire(content_key, 10)
+        store.set(cached_key, html)
+        store.expire(cached_key, 10)
         return html
-    return caller
+    return wrapper
 
 
 @count_url_access
 def get_page(url: str) -> str:
-    """ Accesses HTML content of a url """
-    result = requests.get(url)
-    return result.text
+    """ Returns HTML content of a url """
+    res = requests.get(url)
+    return res.text
