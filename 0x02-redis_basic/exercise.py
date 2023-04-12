@@ -34,6 +34,22 @@ def call_history(method: Callable) -> Callable:
 def decode_utf8(a: bytes) -> str:
     """ Decoder to store the histroy of Input & output"""
     return a.decode('utf-8') if type(a) == bytes else a
+def replay(method: Callable):
+    """ a replay function to display the history 
+    of calls of a particular function. 
+    """
+    reply_key = method.__qualname__
+    k = "".join([reply_key, ":inputs"])
+    r = "".join([reply_key, ":outputs"])
+    call_count = method.__self__.get(key)
+    k_result_list = method.__self__._redis.lrange(k, 0, -1)
+    r_result_list = method.__self__._redis.lrange(r, 0, -1)
+    queue = list(zip(k_result_list, r_result_list))
+    print(f"{reply_key} was called {decode_utf8(call_count)} times:")
+    for p, q, in queue:
+        p = decode_utf8(p)
+        q = decode_utf8(q)
+        print(f"{reply_key}(*{p}) -> {q}")
 class Cache:
     """ An object for storing data 
     in a Redis data storage.
