@@ -31,25 +31,32 @@ def call_history(method: Callable) -> Callable:
         self._redis.rpush(o, str(result_call))
         return result_call
     return caller
+def replay(fn: Callable) -> None:
+    '''Displays the call history of a Cache class' method.
+    '''
+    if fn is None or not hasattr(fn, '__self__'):
+        return
+    redis_store = getattr(fn.__self__, '_redis', None)
+    if not isinstance(redis_store, redis.Redis):
+        return
+    fxn_name = fn.__qualname__
+    in_key = '{}:inputs'.format(fxn_name)
+    out_key = '{}:outputs'.format(fxn_name)
+    fxn_call_count = 0
+    if redis_store.exists(fxn_name) != 0:
+        fxn_call_count = int(redis_store.get(fxn_name))
+    print('{} was called {} times:'.format(fxn_name, fxn_call_count))
+    fxn_inputs = redis_store.lrange(in_key, 0, -1)
+    fxn_outputs = redis_store.lrange(out_key, 0, -1)
+    for fxn_input, fxn_output in zip(fxn_inputs, fxn_outputs):
+        print('{}(*{}) -> {}'.format(
+            fxn_name,
+            fxn_input.decode("utf-8"),
+            fxn_output,
+        ))
 def decode_utf8(a: bytes) -> str:
     """ Decoder to store the histroy of Input & output"""
     return a.decode('utf-8') if type(a) == bytes else a
-def replay(method: Callable):
-    """ a replay function to display the history 
-    of calls of a particular function. 
-    """
-    key = method.__qualname__
-    i = "".join([key, ":inputs"])
-    o = "".join([key, ":outputs"])
-    call_count = method.__self__.get(key)
-    i_list = method.__self__._redis.lrange(i, 0, -1)
-    o_list = method.__self__._redis.lrange(o, 0, -1)
-    queue = list(zip(i_list, o_list))
-    print(f"{key} was called {decode_utf8(count)} times:")
-    for k, v, in queue:
-        k = decode_utf8(k)
-        v = decode_utf8(v)
-        print(f"{key}(*{k}) -> {v}")
 class Cache:
     """ An object for storing data 
     in a Redis data storage.
