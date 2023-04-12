@@ -31,28 +31,31 @@ def call_history(method: Callable) -> Callable:
         self._redis.rpush(o, str(result_call))
         return result_call
     return caller
-def replay(fn: Callable) -> None:
-    '''Displays the call history of a Cache class' method.
-    '''
-    if fn is None or not hasattr(fn, '__self__'):
+
+
+def replay(fnction: Callable) -> None:
+    """ a replay function to display the history of calls 
+    of a particular function..
+    """
+    if fnction is None or not hasattr(fnction, '__self__'):
         return
-    redis_store = getattr(fn.__self__, '_redis', None)
-    if not isinstance(redis_store, redis.Redis):
+    r_store = getattr(fnction.__self__, '_redis', None)
+    if not isinstance(r_store, redis.Redis):
         return
-    fxn_name = fn.__qualname__
-    in_key = '{}:inputs'.format(fxn_name)
-    out_key = '{}:outputs'.format(fxn_name)
-    fxn_call_count = 0
-    if redis_store.exists(fxn_name) != 0:
-        fxn_call_count = int(redis_store.get(fxn_name))
-    print('{} was called {} times:'.format(fxn_name, fxn_call_count))
-    fxn_inputs = redis_store.lrange(in_key, 0, -1)
-    fxn_outputs = redis_store.lrange(out_key, 0, -1)
-    for fxn_input, fxn_output in zip(fxn_inputs, fxn_outputs):
+    func_name = fnction.__qualname__
+    input_key = '{}:inputs'.format(func_name)
+    output_key = '{}:outputs'.format(func_name)
+    func_call_count = 0
+    if r_store.exists(func_name) != 0:
+        func_call_count = int(r_store.get(func_name))
+    print('{} was called {} times:'.format(func_name, func_call_count))
+    func_inputs = r_store.lrange(input_key, 0, -1)
+    func_outputs = r_store.lrange(output_key, 0, -1)
+    for func_input, func_output in zip(func_inputs, func_outputs):
         print('{}(*{}) -> {}'.format(
-            fxn_name,
-            fxn_input.decode("utf-8"),
-            fxn_output,
+            func_name,
+            func_input.decode("utf-8"),
+            func_output,
         ))
 def decode_utf8(a: bytes) -> str:
     """ Decoder to store the histroy of Input & output"""
