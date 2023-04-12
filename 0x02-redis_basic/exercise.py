@@ -8,18 +8,20 @@ import redis
 from functools import wraps
 from typing import Any, Callable, Union
 def count_calls(method: Callable) -> Callable:
-    """ Tracks the number of calls 
-    to a method in a Cache class.
-    """
+    """ Count calls """
+    key = method.__qualname__
     @wraps(method)
-    def caller(self, *args, **kwargs) -> Any:
-        """Invokes the given method 
-        after incrementing its call counter 
-        """
-        if isinstance(self._redis, redis.Redis):
-            self._redis.incr(method.__qualname__)
+    def wrapper(self, *args, **kwargs):
+        """ Wrapp """
+        self._redis.incr(key)
         return method(self, *args, **kwargs)
-    return caller
+    return wrapper
+
+
+def decode_utf8(b: bytes) -> str:
+    """ Decodes """
+    return b.decode('utf-8') if type(b) == bytes else b
+
 
 class Cache:
     """ An object for storing data 
