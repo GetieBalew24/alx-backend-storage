@@ -7,30 +7,6 @@ import uuid
 import redis
 from functools import wraps
 from typing import Any, Callable, Union
-def count_calls(method: Callable) -> Callable:
-    """ Count number of calls """
-    call_key = method.__qualname__
-    @wraps(method)
-    def caller(self, *args, **kwargs):
-        """ caller """
-        self._redis.incr(call_key)
-        return method(self, *args, **kwargs)
-    return caller
-def call_history(method: Callable) -> Callable:
-    """ Call history decorator to store the history of inputs 
-    and outputs for a particular function. 
-    """
-    call_key = method.__qualname__
-    i= "".join([call_key, ":inputs"])
-    o = "".join([call_key, ":outputs"])
-    @wraps(method)
-    def caller(self, *args, **kwargs):
-        """ caller history"""
-        self._redis.rpush(i, str(args))
-        result_call = method(self, *args, **kwargs)
-        self._redis.rpush(o, str(result_call))
-        return result_call
-    return caller
 
 
 def replay(fnction: Callable) -> None:
@@ -57,6 +33,33 @@ def replay(fnction: Callable) -> None:
             func_input.decode("utf-8"),
             func_output,
         ))
+        
+def count_calls(method: Callable) -> Callable:
+    """ Count number of calls """
+    call_key = method.__qualname__
+    @wraps(method)
+    def caller(self, *args, **kwargs):
+        """ caller """
+        self._redis.incr(call_key)
+        return method(self, *args, **kwargs)
+    return caller
+def call_history(method: Callable) -> Callable:
+    """ Call history decorator to store the history of inputs 
+    and outputs for a particular function. 
+    """
+    call_key = method.__qualname__
+    i= "".join([call_key, ":inputs"])
+    o = "".join([call_key, ":outputs"])
+    @wraps(method)
+    def caller(self, *args, **kwargs):
+        """ caller history"""
+        self._redis.rpush(i, str(args))
+        result_call = method(self, *args, **kwargs)
+        self._redis.rpush(o, str(result_call))
+        return result_call
+    return caller
+
+
 def decode_utf8(a: bytes) -> str:
     """ Decoder to store the histroy of Input & output"""
     return a.decode('utf-8') if type(a) == bytes else a
