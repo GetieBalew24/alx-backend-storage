@@ -39,12 +39,12 @@ def replay(method: Callable):
     of calls of a particular function. 
     """
     reply_key = method.__qualname__
-    k = "".join([reply_key, ":inputs"])
-    r = "".join([reply_key, ":outputs"])
+    i = "".join([reply_key, ":inputs"])
+    o = "".join([reply_key, ":outputs"])
     call_count = method.__self__.get(key)
-    k_result_list = method.__self__._redis.lrange(k, 0, -1)
-    r_result_list = method.__self__._redis.lrange(r, 0, -1)
-    queue = list(zip(k_result_list, r_result_list))
+    i_result_list = method.__self__._redis.lrange(i, 0, -1)
+    o_result_list = method.__self__._redis.lrange(o, 0, -1)
+    queue = list(zip(i_result_list, o_result_list))
     print(f"{reply_key} was called {decode_utf8(call_count)} times:")
     for p, q, in queue:
         p = decode_utf8(p)
